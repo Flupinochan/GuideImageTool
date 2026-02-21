@@ -72,39 +72,31 @@ onMounted(() => {
   stage.add(contentLayer)
   stage.add(borderLayer)
 
-  // Ctrl + Vの画像貼り付けイベントリスナー
   window.addEventListener('paste', handlePaste)
-  // 赤枠選択解除
+  window.addEventListener('click', handleWindowClick)
   stage.on('click', (event) => {
-    if (event.target !== stage) return
+    if (event.target.id().startsWith('border-')) return
+    if (!transformer) return
+    // 赤枠以外をクリックした場合に、Transformer(赤枠リサイズ用のAnchor)を非表示
     transformer.nodes([])
     borderLayer.batchDraw()
   })
-  window.addEventListener('click', handleWindowClick)
   stage.on('contextmenu', (event) => {
+    const id = event.target.id()
+    if (!id.startsWith('border-') && !id.startsWith('text-')) return
+    // border or textを右クリックした場合に、カスタムコンテキストメニューを表示
+    // ブラウザのデフォルトコンテキストメニューを無効化
     event.evt.preventDefault()
-
-    if (event.target === stage) {
-      showMenu.value = false
-      transformer.nodes([])
-      borderLayer.batchDraw()
-      return
-    }
-
-    menuPosition.value = {
-      x: event.evt.clientX,
-      y: event.evt.clientY,
-    }
-
-    selectedId.value = event.target.id()
+    selectedId.value = id
+    menuPosition.value = { x: event.evt.clientX, y: event.evt.clientY }
     showMenu.value = true
   })
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('paste', handlePaste)
-  stage.destroy()
   window.removeEventListener('click', handleWindowClick)
+  stage.destroy()
 })
 
 // 画像貼り付け
@@ -129,6 +121,7 @@ function handlePaste(event: ClipboardEvent) {
 
     // 画像用Canvasを初期化
     const konvaImage = new Konva.Image({
+      id: `background-${crypto.randomUUID()}`,
       image: img,
       x: 0,
       y: 0,
@@ -150,13 +143,19 @@ function addText(text: string) {
   const backgroundImage = backgroundLayer.findOne('Image')
   if (!backgroundImage) return
 
+  // transformer(赤枠リサイズ用のAnchor)を非表示
+  if (transformer) {
+    transformer.nodes([])
+    borderLayer.batchDraw()
+  }
+
   // Canvas中央座標を計算
   const centerX = stage.width() / 2
   const centerY = stage.height() / 2
 
   // テキストの定義
   const konvaText = new Konva.Text({
-    id: crypto.randomUUID(),
+    id: `text-${crypto.randomUUID()}`,
     text,
     x: centerX,
     y: centerY,
@@ -179,13 +178,19 @@ function addBorder() {
   const backgroundImage = backgroundLayer.findOne('Image')
   if (!backgroundImage) return
 
+  // transformer(赤枠リサイズ用のAnchor)を非表示
+  if (transformer) {
+    transformer.nodes([])
+    borderLayer.batchDraw()
+  }
+
   // Canvas中央座標を計算
   const centerX = stage.width() / 2
   const centerY = stage.height() / 2
 
   // 赤枠定義
   const rect = new Konva.Rect({
-    id: crypto.randomUUID(),
+    id: `border-${crypto.randomUUID()}`,
     x: centerX,
     y: centerY,
     width: 200,
@@ -253,7 +258,9 @@ function deleteSelected() {
   const node = stage.findOne(`#${selectedId.value}`)
   if (!node) return
 
-  transformer.nodes([])
+  if (node.id().startsWith('border-')) {
+    transformer.nodes([])
+  }
   node.destroy()
 
   borderLayer.batchDraw()
