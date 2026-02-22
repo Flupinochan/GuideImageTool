@@ -6,7 +6,7 @@ import * as ssm from 'aws-cdk-lib/aws-ssm'
 import * as cdk from 'aws-cdk-lib/core'
 import { CodeBuildStep, CodePipeline, CodePipelineSource } from 'aws-cdk-lib/pipelines'
 import { Construct } from 'constructs'
-import { CdkStack } from './../lib/cdk-stack'
+import { CdkStack } from './cdk-stack'
 
 interface PipelineStackProps extends cdk.StackProps {
   cdkStack: CdkStack
@@ -44,13 +44,20 @@ export class PipelineStack extends cdk.Stack {
       }),
       commands: [
         'set -e',
+        'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"',
+        'unzip awscliv2.zip',
+        './aws/install --bin-dir $HOME/.local/bin --install-dir $HOME/.local/aws-cli --update',
+        'export PATH=$HOME/.local/bin:$PATH',
+        'aws --version',
         'npm ci',
         'npm run build',
         `aws s3 sync dist/ s3://${props?.cdkStack.bucket.bucketName}/ --delete`,
         `aws cloudfront create-invalidation --distribution-id ${props?.cdkStack.distribution.distributionId} --paths "/*"`,
+        'cd cdk && npx cdk synth',
       ],
       buildEnvironment: {
         buildImage: codebuild.LinuxBuildImage.fromDockerRegistry('node:22'),
+        privileged: true,
       },
       logging: {
         cloudWatch: {
