@@ -27,14 +27,15 @@
     <v-layer :config="baseImageLayer.imageLayerConfig">
       <v-image :config="baseImageLayer.imageConfig" />
     </v-layer>
-    <v-layer :config="numTextLayer.layerConfig">
+    <v-layer ref="numTextLayerRef" :config="numTextLayer.layerConfig">
       <v-text
         v-for="textConfig in numTextLayer.textConfigs"
         :key="textConfig.id"
         :config="textConfig"
+        @click="handleNumTextClick(textConfig.id)"
       />
     </v-layer>
-    <v-layer>
+    <v-layer ref="squareFrameLayerRef" :config="squareFramelayer.layerConfig">
       <v-rect
         v-for="squareFrameConfig in squareFramelayer.squareFrameConfig"
         :key="squareFrameConfig.id"
@@ -55,20 +56,20 @@
 </template>
 
 <script setup lang="ts">
+import { dragEndHandler, dragMoveHandler } from '@/libraries/snap'
 import { useBaseImageLayer } from '@/stores/useBaseImageLayer'
 import { useNumTextLayer } from '@/stores/useNumTextLayer'
 import { useSquareFrameLayer } from '@/stores/useSquareFrameLayer'
 import type Konva from 'konva'
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 
-type StageRefLike = {
-  getNode: () => Konva.Stage
-}
-type TransformerRefLike = {
-  getNode: () => Konva.Transformer
-}
+type StageRefLike = { getNode: () => Konva.Stage }
+type LayerRefLike = { getNode: () => Konva.Layer }
+type TransformerRefLike = { getNode: () => Konva.Transformer }
 
 const stageRef = ref<StageRefLike>()
+const numTextLayerRef = ref<LayerRefLike>()
+const squareFrameLayerRef = ref<LayerRefLike>()
 const squareFrameTransformerRef = ref<TransformerRefLike>()
 
 const showMenu = ref(false)
@@ -125,7 +126,15 @@ function handleSquareFrameClick(frameId: string | undefined) {
   if (!frameId || !stageRef.value || !squareFrameTransformerRef.value) return
   const node = stageRef.value.getNode().findOne(`#${frameId}`)
   if (!node) return
+  selectedId.value = frameId
   squareFrameTransformerRef.value.getNode().nodes([node])
+}
+
+function handleNumTextClick(textId: string | undefined) {
+  if (!textId || !stageRef.value || !numTextLayerRef.value) return
+  const node = stageRef.value.getNode().findOne(`#${textId}`)
+  if (!node) return
+  selectedId.value = textId
 }
 
 async function copyCanvasToClipboard() {
@@ -182,14 +191,81 @@ function handleDelete() {
   showMenu.value = false
 }
 
+function handleArrowKeys(e: KeyboardEvent) {
+  if (!selectedId.value || !stageRef.value) return
+
+  const stage = stageRef.value.getNode()
+  const node = stage.findOne(`#${selectedId.value}`) as Konva.Node
+  if (!node) return
+
+  const step = 1
+  let x = node.x()
+  let y = node.y()
+
+  switch (e.key) {
+    case 'ArrowUp':
+      y -= step
+      break
+    case 'ArrowDown':
+      y += step
+      break
+    case 'ArrowLeft':
+      x -= step
+      break
+    case 'ArrowRight':
+      x += step
+      break
+    default:
+      return
+  }
+
+  // 1. Konva上の移動
+  node.position({ x, y })
+  node.getLayer()?.batchDraw()
+
+  // 2. Piniaの同期
+  const text = numTextLayer.textConfigs.find((t) => t.id === selectedId.value)
+  if (text) {
+    text.x = x
+    text.y = y
+    return
+  }
+
+  const frame = squareFramelayer.squareFrameConfig.find((f) => f.id === selectedId.value)
+  if (frame) {
+    frame.x = x
+    frame.y = y
+  }
+}
+
 onMounted(() => {
   window.addEventListener('paste', handlePaste)
   window.addEventListener('click', handleWindowClick)
+  window.addEventListener('keydown', handleArrowKeys)
+
+  if (!stageRef.value) return
+  const stage = stageRef.value.getNode()
+
+  const textLayer = numTextLayerRef.value?.getNode()
+  const frameLayer = squareFrameLayerRef.value?.getNode()
+
+  if (textLayer) {
+    textLayer.on('dragmove', dragMoveHandler(stage, textLayer))
+    textLayer.on('dragend', dragEndHandler(textLayer))
+  }
+  if (frameLayer) {
+    frameLayer.on('dragmove', dragMoveHandler(stage, frameLayer))
+    frameLayer.on('dragend', dragEndHandler(frameLayer))
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('paste', handlePaste)
   window.removeEventListener('click', handleWindowClick)
+  window.removeEventListener('keydown', handleArrowKeys)
+
+  numTextLayerRef.value?.getNode().off('dragmove dragend')
+  squareFrameLayerRef.value?.getNode().off('dragmove dragend')
 })
 </script>
 

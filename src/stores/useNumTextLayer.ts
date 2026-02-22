@@ -18,6 +18,7 @@ export const useNumTextLayer = defineStore('numTextLayer', () => {
 
     const newTextConfig: Konva.TextConfig = {
       id: `num-text-${crypto.randomUUID()}`,
+      name: 'object',
       text,
       x: baseCenter.x,
       y: baseCenter.y,

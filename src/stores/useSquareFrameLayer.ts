@@ -18,6 +18,7 @@ export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
 
     const newSquareFrameConfig: Konva.RectConfig = {
       id: `square-frame-${crypto.randomUUID()}`,
+      name: 'object',
       x: baseCenter.x,
       y: baseCenter.y,
       width: 100,
