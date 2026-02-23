@@ -90,6 +90,7 @@ function drawGuides(layer: Konva.Layer, guides: Guide[]) {
       points: lg.orientation === 'H' ? [-6000, 0, 6000, 0] : [0, -6000, 0, 6000],
       stroke: 'rgb(0,161,255)',
       strokeWidth: 1,
+      shadowForStrokeEnabled: false,
       name: 'guid-line',
       dash: [4, 6],
     })

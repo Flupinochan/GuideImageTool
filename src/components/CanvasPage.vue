@@ -1,5 +1,4 @@
 <template>
-  <div style="padding: 30px"></div>
   <v-btn v-for="text in numberText" :key="text" class="text-h6" @click="handleAddText(text)">
     {{ text }}
   </v-btn>
@@ -89,7 +88,7 @@ const squareFramelayer = useSquareFrameLayer()
 
 const numberText = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
 
-function handleStageClick(event: Konva.KonvaEventObject<PointerEvent>) {
+function handleStageClick(event: Konva.KonvaEventObject<MouseEvent>) {
   if (!stageRef.value || !squareFrameTransformerRef.value) return
   if (event.target === stageRef.value.getNode()) {
     squareFrameTransformerRef.value.getNode().nodes([])
@@ -174,10 +173,12 @@ function exportCanvas() {
   const link = document.createElement('a')
   link.download = `guide-image-tool_${Date.now()}.png`
   link.href = dataURL
+  document.body.appendChild(link)
   link.click()
+  document.body.removeChild(link)
 }
 
-function handleContextMenu(event: Konva.KonvaEventObject<PointerEvent>) {
+function handleContextMenu(event: Konva.KonvaEventObject<MouseEvent>) {
   if (!stageRef.value) return
   if (event.target === stageRef.value.getNode()) {
     showMenu.value = false

@@ -10,6 +10,7 @@ interface SquareFrameConfig extends Konva.RectConfig {
   y: number
   draggable: boolean
   strokeScaleEnabled: boolean
+  shadowForStrokeEnabled: boolean
 }
 
 interface SharedSquareFrameConfig extends Partial<Konva.RectConfig> {
@@ -43,6 +44,7 @@ export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
       height: 100,
       draggable: true,
       strokeScaleEnabled: false,
+      shadowForStrokeEnabled: false,
     }
 
     squareFrameConfig.value.push(newSquareFrameConfig)
@@ -59,6 +61,7 @@ export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
       height: config.height,
       draggable: config.draggable,
       strokeScaleEnabled: config.strokeScaleEnabled,
+      shadowForStrokeEnabled: config.shadowForStrokeEnabled,
     } as Konva.RectConfig
   }
 

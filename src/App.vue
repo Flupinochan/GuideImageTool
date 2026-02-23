@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
+import SettingsDrawer from './components/AppDrawer.vue'
 import CanvasPage from './components/CanvasPage.vue'
-import SettingsDrawer from './components/SettingsDrawer.vue'
 </script>
 
 <style>

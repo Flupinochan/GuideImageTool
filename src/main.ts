@@ -4,11 +4,10 @@ import type { Component } from 'vue'
 import { createApp } from 'vue'
 import VueKonva from 'vue-konva'
 import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
+// import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import 'vuetify/styles'
-import colors from 'vuetify/util/colors'
 import App from './App.vue'
 
 const app = createApp(App as Component)
@@ -16,7 +15,8 @@ const app = createApp(App as Component)
 const pinia = createPinia()
 
 const vuetify = createVuetify({
-  components,
+  // vite-plugin-vuetifyが必要なcomponentsを自動的に登録するため指定不要
+  // components,
   directives,
   icons: {
     defaultSet: 'mdi',
@@ -31,14 +31,15 @@ const vuetify = createVuetify({
   theme: {
     defaultTheme: 'system',
     themes: {
-      light: { colors: { primary: colors.blue.base } },
-      dark: { colors: { primary: colors.blue.base } },
+      // light: { colors: { primary: colors.blue.base } },
+      // dark: { colors: { primary: colors.blue.base } },
     },
   },
   defaults: {
-    global: {
-      color: 'primary',
-      variant: 'outlined',
+    global: {},
+    VBtn: {
+      // color: 'primary',
+      // variant: 'outlined',
     },
   },
 })
