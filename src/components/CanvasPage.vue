@@ -152,13 +152,16 @@ function handleImageClick(imageId: string | undefined) {
 
 async function copyCanvasToClipboard() {
   if (!stageRef.value || !squareFrameTransformerRef.value) return
+  const stage = stageRef.value.getNode()
+  if (stage.width() === 0 || stage.height() === 0) return
   squareFrameTransformerRef.value.getNode().nodes([])
-  const canvas = stageRef.value.getNode().toCanvas()
   const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob(
-      (value) => (value ? resolve(value) : reject(new Error('Failed to create blob'))),
-      'image/png',
-    ),
+    stage
+      .toCanvas()
+      .toBlob(
+        (value) => (value ? resolve(value) : reject(new Error('Failed to create blob'))),
+        'image/png',
+      ),
   )
   await navigator.clipboard.write([
     new ClipboardItem({
@@ -169,7 +172,9 @@ async function copyCanvasToClipboard() {
 
 function exportCanvas() {
   if (!stageRef.value) return
-  const dataURL = stageRef.value.getNode().toDataURL()
+  const stage = stageRef.value.getNode()
+  if (stage.width() === 0 || stage.height() === 0) return
+  const dataURL = stage.toDataURL()
   const link = document.createElement('a')
   link.download = `guide-image-tool_${Date.now()}.png`
   link.href = dataURL
