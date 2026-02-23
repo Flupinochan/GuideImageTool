@@ -1,4 +1,5 @@
 <template>
+  <div style="padding: 30px"></div>
   <v-btn v-for="text in numberText" :key="text" class="text-h6" @click="handleAddText(text)">
     {{ text }}
   </v-btn>
@@ -36,7 +37,7 @@
       <v-text
         v-for="textConfig in numTextLayer.textConfigs"
         :key="textConfig.id"
-        :config="textConfig"
+        v-bind="numTextLayer.getEffective(textConfig)"
         @click="handleNumTextClick(textConfig.id)"
       />
     </v-layer>
@@ -44,7 +45,7 @@
       <v-rect
         v-for="squareFrameConfig in squareFramelayer.squareFrameConfig"
         :key="squareFrameConfig.id"
-        :config="squareFrameConfig"
+        v-bind="squareFramelayer.getEffective(squareFrameConfig)"
         @click="handleSquareFrameClick(squareFrameConfig.id)"
       />
       <v-transformer
@@ -205,49 +206,41 @@ function handleDelete() {
 }
 
 function handleArrowKeys(e: KeyboardEvent) {
-  if (!selectedId.value || !stageRef.value) return
-
-  const stage = stageRef.value.getNode()
-  const node = stage.findOne(`#${selectedId.value}`) as Konva.Node
-  if (!node) return
+  if (!selectedId.value) return
 
   const step = 1
-  let x = node.x()
-  let y = node.y()
-
+  let dx = 0
+  let dy = 0
   switch (e.key) {
     case 'ArrowUp':
-      y -= step
+      dy = -step
       break
     case 'ArrowDown':
-      y += step
+      dy = step
       break
     case 'ArrowLeft':
-      x -= step
+      dx = -step
       break
     case 'ArrowRight':
-      x += step
+      dx = step
       break
     default:
       return
   }
 
-  // 1. Konva上の移動
-  node.position({ x, y })
-  node.getLayer()?.batchDraw()
-
-  // 2. Piniaの同期
+  // テキストの同期
   const text = numTextLayer.textConfigs.find((t) => t.id === selectedId.value)
   if (text) {
-    text.x = x
-    text.y = y
+    text.x += dx
+    text.y += dy
     return
   }
 
+  // フレームの同期
   const frame = squareFramelayer.squareFrameConfig.find((f) => f.id === selectedId.value)
   if (frame) {
-    frame.x = x
-    frame.y = y
+    frame.x += dx
+    frame.y += dy
   }
 }
 
@@ -266,10 +259,30 @@ onMounted(() => {
   if (textLayer) {
     textLayer.on('dragmove', dragMoveHandler(stage, textLayer))
     textLayer.on('dragend', dragEndHandler(textLayer))
+    // draggableによる移動をstoreに反映するため
+    textLayer.on('dragend', (event: Konva.KonvaEventObject<DragEvent>) => {
+      const node = event.target
+      const id = node.id()
+      const t = numTextLayer.textConfigs.find((item) => item.id === id)
+      if (t) {
+        t.x = node.x()
+        t.y = node.y()
+      }
+    })
   }
   if (frameLayer) {
     frameLayer.on('dragmove', dragMoveHandler(stage, frameLayer))
     frameLayer.on('dragend', dragEndHandler(frameLayer))
+    // draggableによる移動をstoreに反映するため
+    frameLayer.on('dragend', (event: Konva.KonvaEventObject<DragEvent>) => {
+      const node = event.target
+      const id = node.id()
+      const f = squareFramelayer.squareFrameConfig.find((item) => item.id === id)
+      if (f) {
+        f.x = node.x()
+        f.y = node.y()
+      }
+    })
   }
   if (imageLayer) {
     imageLayer.on('dragmove', dragMoveHandler(stage, imageLayer))

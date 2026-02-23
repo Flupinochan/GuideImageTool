@@ -48,11 +48,18 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
     imageConfigs.value.push(newImageConfig)
   }
 
+  const updateAll = (patch: Partial<Konva.ImageConfig>) => {
+    for (const cfg of imageConfigs.value) {
+      Object.assign(cfg, patch)
+    }
+  }
+
   return {
     stageConfig,
     imageLayerConfig,
     imageConfigs,
     add,
+    updateAll,
     isValid,
     getCenter,
   }

@@ -1,5 +1,6 @@
 import { mdiFileImage } from '@mdi/js'
 import { createPinia } from 'pinia'
+import type { Component } from 'vue'
 import { createApp } from 'vue'
 import VueKonva from 'vue-konva'
 import { createVuetify } from 'vuetify'
@@ -9,7 +10,6 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import 'vuetify/styles'
 import colors from 'vuetify/util/colors'
 import App from './App.vue'
-import type { Component } from 'vue'
 
 const app = createApp(App as Component)
 

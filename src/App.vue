@@ -1,13 +1,19 @@
 <template>
-  <div class="app-scroll">
-    <div class="app-content">
-      <CanvasPage />
-    </div>
-  </div>
+  <v-app>
+    <SettingsDrawer />
+    <v-main>
+      <div class="app-scroll">
+        <div class="app-content">
+          <CanvasPage />
+        </div>
+      </div>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup lang="ts">
 import CanvasPage from './components/CanvasPage.vue'
+import SettingsDrawer from './components/SettingsDrawer.vue'
 </script>
 
 <style>
