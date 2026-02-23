@@ -4,7 +4,8 @@
       text
       @click="drawer = !drawer"
       aria-label="Toggle settings"
-      :style="{ position: 'fixed', left: '10px', top: '10px', zIndex: 2000 }"
+      class="position-fixed"
+      :style="{ left: '10px', top: '10px', zIndex: 2000 }"
     >
       {{ drawer ? '設定を閉じる' : '設定を開く' }}
     </v-btn>
@@ -13,15 +14,15 @@
       v-model="drawer"
       location="start"
       temporary
-      width="320"
+      width="220"
       color="grey-darken-4"
     >
-      <div class="pt-12"></div>
+      <div class="pt-8"></div>
       <v-container class="pa-4">
         <v-form ref="formRef" lazy-validation>
           <v-row dense>
-            <v-col cols="12">
-              <div class="text-subtitle-1 font-weight-medium" style="margin-top: 8px">テキスト</div>
+            <v-col cols="12" class="mt-4 mb-1">
+              <h4>テキスト</h4>
             </v-col>
 
             <v-col cols="12">
@@ -35,7 +36,7 @@
                 hide-details="auto"
                 density="comfortable"
                 outlined
-                class="w-100"
+                class="w-100 mb-2"
               />
             </v-col>
 
@@ -51,8 +52,8 @@
               />
             </v-col>
 
-            <v-col cols="12">
-              <div class="text-subtitle-1 font-weight-medium" style="margin-top: 8px">枠線</div>
+            <v-col cols="12" class="mt-4 mb-1">
+              <h4>枠線</h4>
             </v-col>
 
             <v-col cols="12">
@@ -66,7 +67,7 @@
                 hide-details="auto"
                 density="comfortable"
                 outlined
-                class="w-100"
+                class="w-100 mb-2"
               />
             </v-col>
 
@@ -82,9 +83,8 @@
               />
             </v-col>
 
-            <v-col cols="12" class="d-flex justify-start">
+            <v-col cols="12" class="d-flex justify-start mt-4">
               <v-btn color="primary" class="me-2" @click="onSave">保存</v-btn>
-              <v-btn text @click="drawer = false">閉じる</v-btn>
             </v-col>
           </v-row>
         </v-form>
