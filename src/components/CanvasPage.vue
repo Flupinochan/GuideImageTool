@@ -24,8 +24,13 @@
     @click="handleStageClick"
     @contextmenu="handleContextMenu"
   >
-    <v-layer :config="baseImageLayer.imageLayerConfig">
-      <v-image :config="baseImageLayer.imageConfig" />
+    <v-layer ref="imageLayerRef" :config="baseImageLayer.imageLayerConfig">
+      <v-image
+        v-for="imageConfig in baseImageLayer.imageConfigs"
+        :key="imageConfig.id"
+        :config="imageConfig"
+        @click="handleImageClick(imageConfig.id)"
+      />
     </v-layer>
     <v-layer ref="numTextLayerRef" :config="numTextLayer.layerConfig">
       <v-text
@@ -69,6 +74,7 @@ type TransformerRefLike = { getNode: () => Konva.Transformer }
 
 const stageRef = ref<StageRefLike>()
 const numTextLayerRef = ref<LayerRefLike>()
+const imageLayerRef = ref<LayerRefLike>()
 const squareFrameLayerRef = ref<LayerRefLike>()
 const squareFrameTransformerRef = ref<TransformerRefLike>()
 
@@ -102,7 +108,7 @@ function handlePaste(event: ClipboardEvent) {
 
   const img = new Image()
   img.onload = () => {
-    baseImageLayer.init(img)
+    baseImageLayer.add(img)
     URL.revokeObjectURL(blobUrl)
   }
   img.src = blobUrl
@@ -135,6 +141,13 @@ function handleNumTextClick(textId: string | undefined) {
   const node = stageRef.value.getNode().findOne(`#${textId}`)
   if (!node) return
   selectedId.value = textId
+}
+
+function handleImageClick(imageId: string | undefined) {
+  if (!imageId || !stageRef.value) return
+  const node = stageRef.value.getNode().findOne(`#${imageId}`)
+  if (!node) return
+  selectedId.value = imageId
 }
 
 async function copyCanvasToClipboard() {
@@ -248,6 +261,7 @@ onMounted(() => {
 
   const textLayer = numTextLayerRef.value?.getNode()
   const frameLayer = squareFrameLayerRef.value?.getNode()
+  const imageLayer = imageLayerRef.value?.getNode()
 
   if (textLayer) {
     textLayer.on('dragmove', dragMoveHandler(stage, textLayer))
@@ -256,6 +270,10 @@ onMounted(() => {
   if (frameLayer) {
     frameLayer.on('dragmove', dragMoveHandler(stage, frameLayer))
     frameLayer.on('dragend', dragEndHandler(frameLayer))
+  }
+  if (imageLayer) {
+    imageLayer.on('dragmove', dragMoveHandler(stage, imageLayer))
+    imageLayer.on('dragend', dragEndHandler(imageLayer))
   }
 })
 

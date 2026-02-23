@@ -7,7 +7,7 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
   const imageLayerConfig = ref({
     id: `image-${crypto.randomUUID()}`,
   } as Konva.LayerConfig)
-  const imageConfig = ref({} as Konva.ImageConfig)
+  const imageConfigs = ref([] as Konva.ImageConfig[])
 
   const isValid = () => {
     if (stageConfig.value.width && stageConfig.value.height) {
@@ -26,26 +26,33 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
     }
   }
 
-  const init = (image: HTMLImageElement) => {
-    stageConfig.value = {
-      width: image.width,
-      height: image.height,
-    } as Konva.StageConfig
+  const add = (image: HTMLImageElement) => {
+    const isFirstImage = imageConfigs.value.length < 1
+    if (isFirstImage) {
+      stageConfig.value = {
+        width: image.width,
+        height: image.height,
+      } as Konva.StageConfig
+    }
 
-    imageConfig.value = {
+    const newImageConfig: Konva.ImageConfig = {
       id: `image-${crypto.randomUUID()}`,
+      name: 'object',
       image,
       x: 0,
       y: 0,
-      listening: false,
+      listening: !isFirstImage,
+      draggable: !isFirstImage,
     } as Konva.ImageConfig
+
+    imageConfigs.value.push(newImageConfig)
   }
 
   return {
     stageConfig,
     imageLayerConfig,
-    imageConfig,
-    init,
+    imageConfigs,
+    add,
     isValid,
     getCenter,
   }
