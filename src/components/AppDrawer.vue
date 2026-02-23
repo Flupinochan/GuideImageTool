@@ -4,19 +4,12 @@
     <v-toolbar-title>Guide Image Tool</v-toolbar-title>
   </v-app-bar>
 
-  <v-navigation-drawer
-    v-model="drawer"
-    location="start"
-    temporary
-    width="220"
-    color="grey-darken-4"
-  >
-    <div class="pt-8"></div>
-    <v-container class="pa-4">
+  <v-navigation-drawer v-model="drawer" location="start" temporary width="220">
+    <v-container>
       <v-form ref="formRef" lazy-validation>
         <v-row dense>
-          <v-col cols="12" class="mt-4 mb-1">
-            <h4>テキスト</h4>
+          <v-col cols="12" class="mb-1">
+            <h4>数値テキスト</h4>
           </v-col>
 
           <v-col cols="12">
@@ -46,8 +39,8 @@
             />
           </v-col>
 
-          <v-col cols="12" class="mt-4 mb-1">
-            <h4>枠線</h4>
+          <v-col cols="12" class="mt-2 mb-1">
+            <h4>枠</h4>
           </v-col>
 
           <v-col cols="12">
