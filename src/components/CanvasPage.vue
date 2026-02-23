@@ -74,8 +74,8 @@ type LayerRefLike = { getNode: () => Konva.Layer }
 type TransformerRefLike = { getNode: () => Konva.Transformer }
 
 const stageRef = ref<StageRefLike>()
-const numTextLayerRef = ref<LayerRefLike>()
 const imageLayerRef = ref<LayerRefLike>()
+const numTextLayerRef = ref<LayerRefLike>()
 const squareFrameLayerRef = ref<LayerRefLike>()
 const squareFrameTransformerRef = ref<TransformerRefLike>()
 

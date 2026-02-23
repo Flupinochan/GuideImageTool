@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useBaseImageLayer = defineStore('baseImageLayer', () => {
+  // v-bindしていないためリアクティブではない状態 (必要になったらv-bindする)
   const stageConfig = ref({} as Konva.StageConfig)
   const imageLayerConfig = ref({
     id: `image-${crypto.randomUUID()}`,
