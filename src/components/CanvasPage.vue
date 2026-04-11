@@ -93,17 +93,15 @@
 </template>
 
 <script setup lang="ts">
+import { useCanvasExport } from '@/composables/useCanvasExport'
 import { useImageUpload } from '@/composables/useImageUpload'
 import { dragEndHandler, dragMoveHandler } from '@/libraries/snap'
 import { useBaseImageLayer } from '@/stores/useBaseImageLayer'
 import { useNumTextLayer } from '@/stores/useNumTextLayer'
 import { useSquareFrameLayer } from '@/stores/useSquareFrameLayer'
+import type { LayerRefLike, StageRefLike, TransformerRefLike } from '@/types/canvasRefs'
 import type Konva from 'konva'
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
-
-type StageRefLike = { getNode: () => Konva.Stage }
-type LayerRefLike = { getNode: () => Konva.Layer }
-type TransformerRefLike = { getNode: () => Konva.Transformer }
 
 const stageRef = ref<StageRefLike>()
 const imageLayerRef = ref<LayerRefLike>()
@@ -119,6 +117,7 @@ const baseImageLayer = useBaseImageLayer()
 const numTextLayer = useNumTextLayer()
 const squareFramelayer = useSquareFrameLayer()
 const { handlePaste, handleFileUpload } = useImageUpload()
+const { copyCanvasToClipboard, exportCanvas } = useCanvasExport(stageRef, squareFrameTransformerRef)
 
 const numberText = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
 
@@ -174,45 +173,6 @@ function handleImageClick(imageId: string | undefined) {
   const node = stageRef.value.getNode().findOne(`#${imageId}`)
   if (!node) return
   selectedId.value = imageId
-}
-
-async function createExportBlob() {
-  if (!stageRef.value || !squareFrameTransformerRef.value) return null
-  const stage = stageRef.value.getNode()
-  if (stage.width() === 0 || stage.height() === 0) return null
-  squareFrameTransformerRef.value.getNode().nodes([])
-  return await new Promise<Blob>((resolve, reject) =>
-    stage
-      .toCanvas({ pixelRatio: 1 / baseImageLayer.scale })
-      .toBlob(
-        (value) => (value ? resolve(value) : reject(new Error('Failed to create blob'))),
-        'image/png',
-      ),
-  )
-}
-
-async function copyCanvasToClipboard() {
-  const blob = await createExportBlob()
-  if (!blob) return
-
-  await navigator.clipboard.write([
-    new ClipboardItem({
-      'image/png': blob,
-    }),
-  ])
-}
-
-async function exportCanvas() {
-  const blob = await createExportBlob()
-  if (!blob) return
-
-  const dataURL = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.download = `guide-image-tool_${Date.now()}.png`
-  link.href = dataURL
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
 }
 
 function handleContextMenu(event: Konva.KonvaEventObject<MouseEvent>) {
