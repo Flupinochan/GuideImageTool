@@ -31,7 +31,7 @@ export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
   } as SharedSquareFrameConfig)
 
   const add = () => {
-    if (!baseImageLayer.isValid()) return
+    if (!baseImageLayer.isValid) return
 
     const baseCenter = baseImageLayer.getCenter()
 

@@ -1,10 +1,30 @@
 <template>
-  <v-btn v-for="text in numberText" :key="text" class="text-h6" @click="handleAddText(text)">
-    {{ text }}
-  </v-btn>
-  <v-btn @click="handleAddSquareFrame">枠</v-btn>
-  <v-btn @click="copyCanvasToClipboard"> コピー</v-btn>
-  <v-btn @click="exportCanvas">保存</v-btn>
+  <div class="d-flex align-center ga-1">
+    <v-btn
+      v-for="text in numberText"
+      :key="text"
+      class="text-h6"
+      @click="handleAddText(text)"
+      :disabled="!baseImageLayer.isValid"
+    >
+      {{ text }}
+    </v-btn>
+    <v-btn @click="handleAddSquareFrame" :disabled="!baseImageLayer.isValid">枠</v-btn>
+    <v-number-input
+      v-model="scalePercent"
+      :disabled="!baseImageLayer.isValid"
+      variant="solo"
+      control-variant="split"
+      :step="10"
+      :min="10"
+      hide-details
+      density="compact"
+      style="width: 140px"
+      class="flex-grow-0"
+    />
+    <v-btn @click="copyCanvasToClipboard" :disabled="!baseImageLayer.isValid"> コピー</v-btn>
+    <v-btn @click="exportCanvas" :disabled="!baseImageLayer.isValid">保存</v-btn>
+  </div>
   <v-btn
     v-if="showMenu"
     @click="handleDelete"
@@ -18,7 +38,19 @@
   >
     Delete
   </v-btn>
+  <div v-show="!baseImageLayer.isValid">
+    <v-file-upload
+      style="margin-top: 10px; margin-bottom: 10px"
+      density="comfortable"
+      variant="comfortable"
+      accept="image/*"
+      @update:model-value="handleFileUpload"
+    >
+      <template #item />
+    </v-file-upload>
+  </div>
   <v-stage
+    style="margin-top: 10px"
     ref="stageRef"
     :config="baseImageLayer.stageConfig"
     @click="handleStageClick"
@@ -66,7 +98,7 @@ import { useBaseImageLayer } from '@/stores/useBaseImageLayer'
 import { useNumTextLayer } from '@/stores/useNumTextLayer'
 import { useSquareFrameLayer } from '@/stores/useSquareFrameLayer'
 import type Konva from 'konva'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 type StageRefLike = { getNode: () => Konva.Stage }
 type LayerRefLike = { getNode: () => Konva.Layer }
@@ -88,6 +120,15 @@ const squareFramelayer = useSquareFrameLayer()
 
 const numberText = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
 
+const scalePercent = computed<number>({
+  get: () => Math.round(baseImageLayer.scale * 100),
+  set: (val: number) => {
+    const n = Number(val) || 10
+    const clamped = Math.max(10, n)
+    baseImageLayer.scale = clamped / 100
+  },
+})
+
 function handleStageClick(event: Konva.KonvaEventObject<MouseEvent>) {
   if (!stageRef.value || !squareFrameTransformerRef.value) return
   if (event.target === stageRef.value.getNode()) {
@@ -97,21 +138,30 @@ function handleStageClick(event: Konva.KonvaEventObject<MouseEvent>) {
   handleContextMenu(event)
 }
 
-function handlePaste(event: ClipboardEvent) {
-  const pastedFiles = event.clipboardData?.files
-  if (!pastedFiles || pastedFiles.length === 0) return
-
-  const file = pastedFiles[0]
-  if (!file?.type.startsWith('image/')) return
+function loadImageFile(file: File) {
+  if (!file.type.startsWith('image/')) return
 
   const blobUrl = URL.createObjectURL(file)
-
   const img = new Image()
-  img.onload = () => {
+  img.onload = async () => {
     baseImageLayer.add(img)
     URL.revokeObjectURL(blobUrl)
+    await nextTick()
+    console.log('isValid:', baseImageLayer.isValid)
   }
   img.src = blobUrl
+}
+
+function handlePaste(event: ClipboardEvent) {
+  const pastedFiles = event.clipboardData?.files[0]
+  if (!pastedFiles) return
+  loadImageFile(pastedFiles)
+}
+
+function handleFileUpload(files: File | File[] | null) {
+  const file = Array.isArray(files) ? files[0] : files
+  if (!file) return
+  loadImageFile(file)
 }
 
 function handleAddText(text: string) {
@@ -155,9 +205,10 @@ async function copyCanvasToClipboard() {
   const stage = stageRef.value.getNode()
   if (stage.width() === 0 || stage.height() === 0) return
   squareFrameTransformerRef.value.getNode().nodes([])
+
   const blob = await new Promise<Blob>((resolve, reject) =>
     stage
-      .toCanvas()
+      .toCanvas({ pixelRatio: 1 / baseImageLayer.scale })
       .toBlob(
         (value) => (value ? resolve(value) : reject(new Error('Failed to create blob'))),
         'image/png',

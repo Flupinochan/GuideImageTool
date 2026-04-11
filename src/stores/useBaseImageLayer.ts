@@ -1,41 +1,44 @@
 import type Konva from 'konva'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useBaseImageLayer = defineStore('baseImageLayer', () => {
-  // v-bindしていないためリアクティブではない状態 (必要になったらv-bindする)
-  const stageConfig = ref({} as Konva.StageConfig)
+  const _stageSize = ref({ width: 0, height: 0 })
+  const scale = ref(1)
+
+  const stageConfig = computed(
+    () =>
+      ({
+        width: _stageSize.value.width * scale.value,
+        height: _stageSize.value.height * scale.value,
+        scaleX: scale.value,
+        scaleY: scale.value,
+      }) as Konva.StageConfig,
+  )
+
   const imageLayerConfig = ref({
     id: `image-${crypto.randomUUID()}`,
   } as Konva.LayerConfig)
+
   const imageConfigs = ref([] as Konva.ImageConfig[])
 
-  const isValid = () => {
-    if (stageConfig.value.width && stageConfig.value.height) {
-      return true
-    }
-  }
+  const isValid = computed(() => imageConfigs.value.length > 0)
 
   const getCenter = () => {
-    if (!isValid()) {
+    if (!isValid.value) {
       throw new Error('Stage configuration is not set. Please initialize the base layer first.')
     }
-
     return {
-      x: stageConfig.value.width! / 2,
-      y: stageConfig.value.height! / 2,
+      x: _stageSize.value.width / 2,
+      y: _stageSize.value.height / 2,
     }
   }
 
   const add = (image: HTMLImageElement) => {
     const isFirstImage = imageConfigs.value.length < 1
     if (isFirstImage) {
-      stageConfig.value = {
-        width: image.width,
-        height: image.height,
-      } as Konva.StageConfig
+      _stageSize.value = { width: image.width, height: image.height }
     }
-
     const newImageConfig: Konva.ImageConfig = {
       id: `image-${crypto.randomUUID()}`,
       name: 'object',
@@ -45,7 +48,6 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
       listening: !isFirstImage,
       draggable: !isFirstImage,
     } as Konva.ImageConfig
-
     imageConfigs.value.push(newImageConfig)
   }
 
@@ -59,9 +61,10 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
     stageConfig,
     imageLayerConfig,
     imageConfigs,
+    isValid,
+    scale,
     add,
     updateAll,
-    isValid,
     getCenter,
   }
 })

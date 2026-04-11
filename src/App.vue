@@ -22,20 +22,21 @@ body,
 #app {
   height: 100%;
   margin: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 </style>
 
 <style scoped>
 .app-scroll {
-  height: 100dvh;
+  height: 100%;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app-content {
   padding: 10px;
   box-sizing: border-box;
   width: max-content;
-  min-width: 100%;
+  min-width: 0;
 }
 </style>

@@ -7,6 +7,7 @@ import { createVuetify } from 'vuetify'
 // import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
+import { VFileUpload, VFileUploadItem } from 'vuetify/labs/VFileUpload'
 import 'vuetify/styles'
 import App from './App.vue'
 
@@ -16,7 +17,10 @@ const pinia = createPinia()
 
 const vuetify = createVuetify({
   // vite-plugin-vuetifyが必要なcomponentsを自動的に登録するため指定不要
-  // components,
+  components: {
+    VFileUpload,
+    VFileUploadItem,
+  },
   directives,
   icons: {
     defaultSet: 'mdi',

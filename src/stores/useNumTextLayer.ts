@@ -30,7 +30,7 @@ export const useNumTextLayer = defineStore('numTextLayer', () => {
   } as SharedTextConfig)
 
   const add = (text: string) => {
-    if (!baseImageLayer.isValid()) return
+    if (!baseImageLayer.isValid) return
 
     const baseCenter = baseImageLayer.getCenter()
 
