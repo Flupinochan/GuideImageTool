@@ -70,6 +70,47 @@
             />
           </v-col>
 
+          <v-col cols="4" class="mt-2 mb-1 d-flex justify-start align-center">
+            <h4>外枠</h4>
+          </v-col>
+          <v-col cols="8" class="mt-2 mb-1 d-flex align-center">
+            <v-switch
+              v-model="outerBorder.enabled"
+              hide-details="auto"
+              density="compact"
+              color="primary"
+            />
+          </v-col>
+
+          <v-col cols="12">
+            <v-text-field
+              v-model.number="outerBorder.thickness"
+              label="外枠の太さ"
+              type="number"
+              min="1"
+              max="200"
+              step="1"
+              hide-details="auto"
+              density="comfortable"
+              outlined
+              class="w-100 mb-2"
+              :disabled="!outerBorder.enabled"
+            />
+          </v-col>
+
+          <v-col cols="12">
+            <v-text-field
+              v-model="outerBorder.color"
+              label="色"
+              type="color"
+              hide-details="auto"
+              density="comfortable"
+              outlined
+              class="w-100"
+              :disabled="!outerBorder.enabled"
+            />
+          </v-col>
+
           <v-col cols="12" class="d-flex justify-start mt-4">
             <v-btn color="primary" class="me-2" @click="onSave">保存</v-btn>
           </v-col>
@@ -81,11 +122,13 @@
 
 <script setup lang="ts">
 import { useNumTextLayer } from '@/stores/useNumTextLayer'
+import { useOuterBorder } from '@/stores/useOuterBorder'
 import { useSquareFrameLayer } from '@/stores/useSquareFrameLayer'
 import { ref } from 'vue'
 
 const numTextLayer = useNumTextLayer()
 const squareFramelayer = useSquareFrameLayer()
+const outerBorder = useOuterBorder()
 
 const drawer = ref(false)
 
