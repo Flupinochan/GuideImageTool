@@ -200,13 +200,12 @@ function handleImageClick(imageId: string | undefined) {
   selectedId.value = imageId
 }
 
-async function copyCanvasToClipboard() {
-  if (!stageRef.value || !squareFrameTransformerRef.value) return
+async function createExportBlob() {
+  if (!stageRef.value || !squareFrameTransformerRef.value) return null
   const stage = stageRef.value.getNode()
-  if (stage.width() === 0 || stage.height() === 0) return
+  if (stage.width() === 0 || stage.height() === 0) return null
   squareFrameTransformerRef.value.getNode().nodes([])
-
-  const blob = await new Promise<Blob>((resolve, reject) =>
+  return await new Promise<Blob>((resolve, reject) =>
     stage
       .toCanvas({ pixelRatio: 1 / baseImageLayer.scale })
       .toBlob(
@@ -214,6 +213,12 @@ async function copyCanvasToClipboard() {
         'image/png',
       ),
   )
+}
+
+async function copyCanvasToClipboard() {
+  const blob = await createExportBlob()
+  if (!blob) return
+
   await navigator.clipboard.write([
     new ClipboardItem({
       'image/png': blob,
@@ -221,11 +226,11 @@ async function copyCanvasToClipboard() {
   ])
 }
 
-function exportCanvas() {
-  if (!stageRef.value) return
-  const stage = stageRef.value.getNode()
-  if (stage.width() === 0 || stage.height() === 0) return
-  const dataURL = stage.toDataURL()
+async function exportCanvas() {
+  const blob = await createExportBlob()
+  if (!blob) return
+
+  const dataURL = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.download = `guide-image-tool_${Date.now()}.png`
   link.href = dataURL
