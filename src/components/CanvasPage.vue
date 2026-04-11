@@ -94,6 +94,7 @@
 
 <script setup lang="ts">
 import { useCanvasExport } from '@/composables/useCanvasExport'
+import { useCanvasSelection } from '@/composables/useCanvasSelection'
 import { useImageUpload } from '@/composables/useImageUpload'
 import { dragEndHandler, dragMoveHandler } from '@/libraries/snap'
 import { useBaseImageLayer } from '@/stores/useBaseImageLayer'
@@ -109,14 +110,22 @@ const numTextLayerRef = ref<LayerRefLike>()
 const squareFrameLayerRef = ref<LayerRefLike>()
 const squareFrameTransformerRef = ref<TransformerRefLike>()
 
-const showMenu = ref(false)
-const selectedId = ref<string>('')
-const menuPosition = ref({ x: 0, y: 0 })
-
 const baseImageLayer = useBaseImageLayer()
 const numTextLayer = useNumTextLayer()
 const squareFramelayer = useSquareFrameLayer()
 const { handlePaste, handleFileUpload } = useImageUpload()
+const {
+  showMenu,
+  menuPosition,
+  handleStageClick,
+  handleSquareFrameClick,
+  handleNumTextClick,
+  handleImageClick,
+  handleContextMenu,
+  handleWindowClick,
+  handleDelete,
+  handleArrowKeys,
+} = useCanvasSelection(stageRef, squareFrameTransformerRef)
 const { copyCanvasToClipboard, exportCanvas } = useCanvasExport(stageRef, squareFrameTransformerRef)
 
 const numberText = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
@@ -130,15 +139,6 @@ const scalePercent = computed<number>({
   },
 })
 
-function handleStageClick(event: Konva.KonvaEventObject<MouseEvent>) {
-  if (!stageRef.value || !squareFrameTransformerRef.value) return
-  if (event.target === stageRef.value.getNode()) {
-    squareFrameTransformerRef.value.getNode().nodes([])
-    return
-  }
-  handleContextMenu(event)
-}
-
 function handleAddText(text: string) {
   if (!squareFrameTransformerRef.value) return
   squareFrameTransformerRef.value.getNode().nodes([])
@@ -151,95 +151,6 @@ async function handleAddSquareFrame() {
   squareFramelayer.add()
   await nextTick()
   handleSquareFrameClick(squareFramelayer.squareFrameConfig.at(-1)?.id)
-}
-
-function handleSquareFrameClick(frameId: string | undefined) {
-  if (!frameId || !stageRef.value || !squareFrameTransformerRef.value) return
-  const node = stageRef.value.getNode().findOne(`#${frameId}`)
-  if (!node) return
-  selectedId.value = frameId
-  squareFrameTransformerRef.value.getNode().nodes([node])
-}
-
-function handleNumTextClick(textId: string | undefined) {
-  if (!textId || !stageRef.value || !numTextLayerRef.value) return
-  const node = stageRef.value.getNode().findOne(`#${textId}`)
-  if (!node) return
-  selectedId.value = textId
-}
-
-function handleImageClick(imageId: string | undefined) {
-  if (!imageId || !stageRef.value) return
-  const node = stageRef.value.getNode().findOne(`#${imageId}`)
-  if (!node) return
-  selectedId.value = imageId
-}
-
-function handleContextMenu(event: Konva.KonvaEventObject<MouseEvent>) {
-  if (!stageRef.value) return
-  if (event.target === stageRef.value.getNode()) {
-    showMenu.value = false
-    return
-  }
-  event.evt.preventDefault()
-  selectedId.value = event.target.id()
-  menuPosition.value = { x: event.evt.clientX, y: event.evt.clientY }
-  showMenu.value = true
-}
-
-const handleWindowClick = () => {
-  showMenu.value = false
-}
-
-function handleDelete() {
-  if (!selectedId.value || !stageRef.value || !squareFrameTransformerRef.value) return
-
-  const node = stageRef.value.getNode().findOne(`#${selectedId.value}`)
-  if (!node) return
-
-  squareFrameTransformerRef.value.getNode().nodes([])
-  node.destroy()
-
-  showMenu.value = false
-}
-
-function handleArrowKeys(e: KeyboardEvent) {
-  if (!selectedId.value) return
-
-  const step = 1
-  let dx = 0
-  let dy = 0
-  switch (e.key) {
-    case 'ArrowUp':
-      dy = -step
-      break
-    case 'ArrowDown':
-      dy = step
-      break
-    case 'ArrowLeft':
-      dx = -step
-      break
-    case 'ArrowRight':
-      dx = step
-      break
-    default:
-      return
-  }
-
-  // テキストの同期
-  const text = numTextLayer.textConfigs.find((t) => t.id === selectedId.value)
-  if (text) {
-    text.x += dx
-    text.y += dy
-    return
-  }
-
-  // フレームの同期
-  const frame = squareFramelayer.squareFrameConfig.find((f) => f.id === selectedId.value)
-  if (frame) {
-    frame.x += dx
-    frame.y += dy
-  }
 }
 
 onMounted(() => {
@@ -257,7 +168,6 @@ onMounted(() => {
   if (textLayer) {
     textLayer.on('dragmove', dragMoveHandler(stage, textLayer))
     textLayer.on('dragend', dragEndHandler(textLayer))
-    // draggableによる移動をstoreに反映するため
     textLayer.on('dragend', (event: Konva.KonvaEventObject<DragEvent>) => {
       const node = event.target
       const id = node.id()
@@ -271,7 +181,6 @@ onMounted(() => {
   if (frameLayer) {
     frameLayer.on('dragmove', dragMoveHandler(stage, frameLayer))
     frameLayer.on('dragend', dragEndHandler(frameLayer))
-    // draggableによる移動をstoreに反映するため
     frameLayer.on('dragend', (event: Konva.KonvaEventObject<DragEvent>) => {
       const node = event.target
       const id = node.id()
