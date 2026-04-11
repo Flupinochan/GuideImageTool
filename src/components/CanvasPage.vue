@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import { useImageUpload } from '@/composables/useImageUpload'
 import { dragEndHandler, dragMoveHandler } from '@/libraries/snap'
 import { useBaseImageLayer } from '@/stores/useBaseImageLayer'
 import { useNumTextLayer } from '@/stores/useNumTextLayer'
@@ -117,6 +118,7 @@ const menuPosition = ref({ x: 0, y: 0 })
 const baseImageLayer = useBaseImageLayer()
 const numTextLayer = useNumTextLayer()
 const squareFramelayer = useSquareFrameLayer()
+const { handlePaste, handleFileUpload } = useImageUpload()
 
 const numberText = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
 
@@ -136,32 +138,6 @@ function handleStageClick(event: Konva.KonvaEventObject<MouseEvent>) {
     return
   }
   handleContextMenu(event)
-}
-
-function loadImageFile(file: File) {
-  if (!file.type.startsWith('image/')) return
-
-  const blobUrl = URL.createObjectURL(file)
-  const img = new Image()
-  img.onload = async () => {
-    baseImageLayer.add(img)
-    URL.revokeObjectURL(blobUrl)
-    await nextTick()
-    console.log('isValid:', baseImageLayer.isValid)
-  }
-  img.src = blobUrl
-}
-
-function handlePaste(event: ClipboardEvent) {
-  const pastedFiles = event.clipboardData?.files[0]
-  if (!pastedFiles) return
-  loadImageFile(pastedFiles)
-}
-
-function handleFileUpload(files: File | File[] | null) {
-  const file = Array.isArray(files) ? files[0] : files
-  if (!file) return
-  loadImageFile(file)
 }
 
 function handleAddText(text: string) {
