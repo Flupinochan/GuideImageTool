@@ -5,6 +5,7 @@ import { createApp } from 'vue'
 import VueKonva from 'vue-konva'
 import { createVuetify } from 'vuetify'
 // import * as components from 'vuetify/components'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import { VFileUpload, VFileUploadItem } from 'vuetify/labs/VFileUpload'
@@ -14,6 +15,7 @@ import App from './App.vue'
 const app = createApp(App as Component)
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 const vuetify = createVuetify({
   // vite-plugin-vuetifyが必要なcomponentsを自動的に登録するため指定不要

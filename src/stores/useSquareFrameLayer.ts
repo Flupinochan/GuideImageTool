@@ -1,6 +1,7 @@
 import type Konva from 'konva'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useAppSettings } from './useAppSettings'
 import { useBaseImageLayer } from './useBaseImageLayer'
 
 interface SquareFrameConfig extends Konva.RectConfig {
@@ -20,15 +21,16 @@ interface SharedSquareFrameConfig extends Partial<Konva.RectConfig> {
 
 export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
   const baseImageLayer = useBaseImageLayer()
+  const appSettings = useAppSettings()
+
+  const getStrokeWidth = () => Number(appSettings.squareFrame.sharedSquareFrameConfig.strokeWidth)
 
   const layerConfig = ref({
     id: `square-frame-layer-${crypto.randomUUID()}`,
   } as Konva.LayerConfig)
   const squareFrameConfig = ref([] as SquareFrameConfig[])
-  const sharedSquareFrameConfig = ref({
-    stroke: '#ff0000',
-    strokeWidth: 2,
-  } as SharedSquareFrameConfig)
+  const sharedSquareFrameConfig = appSettings.squareFrame
+    .sharedSquareFrameConfig as SharedSquareFrameConfig
 
   const add = () => {
     if (!baseImageLayer.isValid) return
@@ -52,7 +54,8 @@ export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
 
   const getEffective = (config: SquareFrameConfig): Konva.RectConfig => {
     return {
-      ...sharedSquareFrameConfig.value,
+      ...sharedSquareFrameConfig,
+      strokeWidth: getStrokeWidth(),
       id: config.id,
       name: config.name,
       x: config.x,

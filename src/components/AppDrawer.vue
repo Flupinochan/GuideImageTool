@@ -14,7 +14,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model.number="numTextLayer.sharedTextConfig.fontSize"
+              v-model.number="appSettings.numText.sharedTextConfig.fontSize"
               label="フォントサイズ"
               type="number"
               min="8"
@@ -29,7 +29,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model="numTextLayer.sharedTextConfig.fill"
+              v-model="appSettings.numText.sharedTextConfig.fill"
               label="色"
               type="color"
               hide-details="auto"
@@ -45,7 +45,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model="squareFramelayer.sharedSquareFrameConfig.strokeWidth"
+              v-model.number="appSettings.squareFrame.sharedSquareFrameConfig.strokeWidth"
               label="枠線の太さ"
               type="number"
               min="1"
@@ -60,7 +60,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model="squareFramelayer.sharedSquareFrameConfig.stroke"
+              v-model="appSettings.squareFrame.sharedSquareFrameConfig.stroke"
               label="色"
               type="color"
               hide-details="auto"
@@ -75,7 +75,7 @@
           </v-col>
           <v-col cols="8" class="mt-2 mb-1 d-flex align-center">
             <v-switch
-              v-model="outerBorder.enabled"
+              v-model="appSettings.outerBorder.enabled"
               hide-details="auto"
               density="compact"
               color="primary"
@@ -84,7 +84,7 @@
 
           <v-col cols="12">
             <v-text-field
-              v-model.number="outerBorder.thickness"
+              v-model.number="appSettings.outerBorder.thickness"
               label="外枠の太さ"
               type="number"
               min="1"
@@ -94,25 +94,21 @@
               density="comfortable"
               outlined
               class="w-100 mb-2"
-              :disabled="!outerBorder.enabled"
+              :disabled="!appSettings.outerBorder.enabled"
             />
           </v-col>
 
           <v-col cols="12">
             <v-text-field
-              v-model="outerBorder.color"
+              v-model="appSettings.outerBorder.color"
               label="色"
               type="color"
               hide-details="auto"
               density="comfortable"
               outlined
               class="w-100"
-              :disabled="!outerBorder.enabled"
+              :disabled="!appSettings.outerBorder.enabled"
             />
-          </v-col>
-
-          <v-col cols="12" class="d-flex justify-start mt-4">
-            <v-btn color="primary" class="me-2" @click="onSave">保存</v-btn>
           </v-col>
         </v-row>
       </v-form>
@@ -121,20 +117,11 @@
 </template>
 
 <script setup lang="ts">
-import { useNumTextLayer } from '@/stores/useNumTextLayer'
-import { useOuterBorder } from '@/stores/useOuterBorder'
-import { useSquareFrameLayer } from '@/stores/useSquareFrameLayer'
+import { useAppSettings } from '@/stores/useAppSettings'
 import { ref } from 'vue'
 
-const numTextLayer = useNumTextLayer()
-const squareFramelayer = useSquareFrameLayer()
-const outerBorder = useOuterBorder()
-
+const appSettings = useAppSettings()
 const drawer = ref(false)
-
-function onSave() {
-  drawer.value = false
-}
 </script>
 
 <style scoped></style>

@@ -1,5 +1,5 @@
 import { useBaseImageLayer } from '@/stores/useBaseImageLayer'
-import { useOuterBorder } from '@/stores/useOuterBorder'
+import { useAppSettings } from '@/stores/useAppSettings'
 import type { StageRefLike, TransformerRefLike } from '@/types/canvasRefs'
 import type { Ref } from 'vue'
 
@@ -8,7 +8,7 @@ export function useCanvasExport(
   squareFrameTransformerRef: Ref<TransformerRefLike | undefined>,
 ) {
   const baseImageLayer = useBaseImageLayer()
-  const outerBorder = useOuterBorder()
+  const appSettings = useAppSettings()
 
   async function createExportBlob() {
     if (!stageRef.value || !squareFrameTransformerRef.value) return null
@@ -81,8 +81,12 @@ export function useCanvasExport(
   async function copyCanvasToClipboard() {
     const blob = await createExportBlob()
     if (!blob) return
-    const withOuterBorderBlob = outerBorder.enabled
-      ? await addBorderToBlob(blob, outerBorder.thickness, outerBorder.color)
+    const withOuterBorderBlob = appSettings.outerBorder.enabled
+      ? await addBorderToBlob(
+          blob,
+          appSettings.outerBorder.thickness,
+          appSettings.outerBorder.color,
+        )
       : blob
     if (!withOuterBorderBlob) return
 
@@ -97,8 +101,12 @@ export function useCanvasExport(
     const blob = await createExportBlob()
     if (!blob) return
 
-    const withOuterBorderBlob = outerBorder.enabled
-      ? await addBorderToBlob(blob, outerBorder.thickness, outerBorder.color)
+    const withOuterBorderBlob = appSettings.outerBorder.enabled
+      ? await addBorderToBlob(
+          blob,
+          appSettings.outerBorder.thickness,
+          appSettings.outerBorder.color,
+        )
       : blob
     if (!withOuterBorderBlob) return
 

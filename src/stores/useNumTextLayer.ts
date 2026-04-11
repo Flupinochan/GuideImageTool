@@ -1,6 +1,7 @@
 import type Konva from 'konva'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useAppSettings } from './useAppSettings'
 import { useBaseImageLayer } from './useBaseImageLayer'
 
 interface TextConfig extends Konva.TextConfig {
@@ -19,15 +20,13 @@ interface SharedTextConfig extends Partial<Konva.TextConfig> {
 
 export const useNumTextLayer = defineStore('numTextLayer', () => {
   const baseImageLayer = useBaseImageLayer()
+  const appSettings = useAppSettings()
 
   const layerConfig = ref({
     id: `num-text-${crypto.randomUUID()}`,
   } as Konva.LayerConfig)
   const textConfigs = ref([] as TextConfig[])
-  const sharedTextConfig = ref({
-    fontSize: 40,
-    fill: '#ff0000',
-  } as SharedTextConfig)
+  const sharedTextConfig = appSettings.numText.sharedTextConfig as SharedTextConfig
 
   const add = (text: string) => {
     if (!baseImageLayer.isValid) return
@@ -48,7 +47,7 @@ export const useNumTextLayer = defineStore('numTextLayer', () => {
 
   const getEffective = (config: TextConfig): Konva.TextConfig => {
     return {
-      ...sharedTextConfig.value,
+      ...sharedTextConfig,
       id: config.id,
       name: config.name,
       text: config.text,
