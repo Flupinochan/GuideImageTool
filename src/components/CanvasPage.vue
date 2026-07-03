@@ -22,9 +22,21 @@
       style="width: 140px"
       class="flex-grow-0"
     />
+    <v-btn @click="showClearDialog = true" :disabled="!baseImageLayer.isValid">クリア</v-btn>
     <v-btn @click="copyCanvasToClipboard" :disabled="!baseImageLayer.isValid"> コピー</v-btn>
     <v-btn @click="exportCanvas" :disabled="!baseImageLayer.isValid">保存</v-btn>
   </div>
+  <v-dialog v-model="showClearDialog" max-width="400">
+    <v-card>
+      <v-card-title>クリアの確認</v-card-title>
+      <v-card-text>画像や枠線などをすべてクリアします。よろしいですか?</v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn @click="showClearDialog = false">Cancel</v-btn>
+        <v-btn color="primary" @click="handleClear">OK</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <v-btn
     v-if="showMenu"
     @click="handleDelete"
@@ -44,6 +56,7 @@
       density="comfortable"
       variant="comfortable"
       accept="image/*"
+      title="Click here or press Ctrl + V"
       @update:model-value="handleFileUpload"
     >
       <template #item />
@@ -129,6 +142,16 @@ const {
 const { copyCanvasToClipboard, exportCanvas } = useCanvasExport(stageRef, squareFrameTransformerRef)
 
 const numberText = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
+
+const showClearDialog = ref(false)
+
+function handleClear() {
+  squareFrameTransformerRef.value?.getNode().nodes([])
+  numTextLayer.clear()
+  squareFramelayer.clear()
+  baseImageLayer.clear()
+  showClearDialog.value = false
+}
 
 const scalePercent = computed<number>({
   get: () => Math.round(baseImageLayer.scale * 100),

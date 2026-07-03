@@ -57,6 +57,12 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
     }
   }
 
+  const clear = () => {
+    imageConfigs.value = []
+    _stageSize.value = { width: 0, height: 0 }
+    scale.value = 1
+  }
+
   return {
     stageConfig,
     imageLayerConfig,
@@ -66,5 +72,6 @@ export const useBaseImageLayer = defineStore('baseImageLayer', () => {
     add,
     updateAll,
     getCenter,
+    clear,
   }
 })

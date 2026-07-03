@@ -57,11 +57,16 @@ export const useNumTextLayer = defineStore('numTextLayer', () => {
     } as Konva.TextConfig
   }
 
+  const clear = () => {
+    textConfigs.value = []
+  }
+
   return {
     layerConfig,
     textConfigs,
     sharedTextConfig,
     add,
     getEffective,
+    clear,
   }
 })

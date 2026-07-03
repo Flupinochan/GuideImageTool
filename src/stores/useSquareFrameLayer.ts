@@ -68,11 +68,16 @@ export const useSquareFrameLayer = defineStore('squareFrameLayer', () => {
     } as Konva.RectConfig
   }
 
+  const clear = () => {
+    squareFrameConfig.value = []
+  }
+
   return {
     layerConfig,
     squareFrameConfig,
     sharedSquareFrameConfig,
     add,
     getEffective,
+    clear,
   }
 })
